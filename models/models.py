@@ -5,7 +5,23 @@ import os
 import os.path
 import json
 
+server_path = './'  # equal to server/
+addons_path = server_path + 'odoo/addons'
+json_file_name = server_path + 'debranding_config.json'
+
 # <editor-fold desc="changer backend code"
+def debranding_parts(old_text, new_text, new_color):  # put all your debranding parts here
+
+    # error + warnings dialogs
+    if old_text != new_text:
+        edit_dialogs(old_text, new_text)
+    # translations(ar, fr, en)
+    # edit_translations(old_text, new_text)  # NEED FIXING!
+    # community color changer
+    if new_color != get_community_color():
+        edit_community_color(new_color)  # TESTED
+
+
 def debrand(new_odoo, new_color):
     # check if json file exists
     if os.path.isfile(json_file_name):
