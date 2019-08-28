@@ -40,16 +40,28 @@ def suppressionMot(m,n,file):
 path ="../../"
 files = []
  
-files = [f for f in glob.glob(path +"**/i18n/*.po") if "fr.po" in f or "ar.po" in f or "en_" in f]
+files = [f for f in glob.glob(path +"*.xml")]
 
 for f in files:
-    suppressionMot("Odoo","",f)
-    suppressionMot("odoo","",f)
-    suppressionMot("www.odoo.com","company-website",f)
+	suppressionMot("Odoo","example",f)
+	suppressionMot("odoo","example",f)
+	suppressionMot("<>","<odoo>",f)
+	suppressionMot("</>","</odoo>",f)
+			
 
-files = [f for f in glob.glob(path +"/web/views/webclient_templates.xml") and f in glob.glob(path +"/web/views/databse_manager.html") ]
+files = [f for f in glob.glob(path +"/web/views/*.xml")]
+file = [f for f in glob.glob(path +"/web/views/*.html") ]
+
 for f in files:
-    suppressionMot("favicon.ico","",f)
+	suppressionMot("favicon.ico","",f)
+	suppressionMot("logo.png","",f)
+	suppressionMot("logo2.png","",f)
+
+for f in file:
+	suppressionMot("favicon.ico","",f)
+	suppressionMot("logo.png","",f)
+	suppressionMot("logo2.png","",f)
+	
 
 def replaceOccurrencesInFile(oldText, newText, atFile):
     f = open(atFile, 'r')
