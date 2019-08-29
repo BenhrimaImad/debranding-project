@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api
+from . import polib
 import json
 import os
 import os.path
@@ -44,11 +45,19 @@ def edit_dialogs(old_text, new_text):
     replace_occurrences_in_file(old_text, new_text, web_js_path + "/core/dialog.js", "title")
 
 
-def edit_translations(old_text, new_text):  # needs fixing (encoding errors)
-    paths = [f for f in glob.glob(addons_path + "/*/i18n/*.po")
-    # if "fr.po" in f or "en_AU.po" in f or "en_GB" in f]
+def po_replace_msgsr(old_text, new_text, file):
+    po = polib.pofile(file)
+    for entry in po:
+        if old_text in entry.msgstr:
+            entry.msgstr = entry.msgid.replace(old_text, new_text)
+    po.save()
+
+
+def edit_translations(old_text, new_text):  # needs testing
+    paths = [f for f in glob.glob(addons_path + "/*/i18n/*.po") if "fr.po" in f or "en_AU.po" in f or "en_GB" in f]
     for f in paths:
-        replace_occurrences_in_file(old_text, new_text, f, "msgstr")
+        # replace_occurrences_in_file(old_text, new_text, f, "msgstr")
+        po_replace_msgsr(old_text, new_text, f)
 
 
 def edit_community_color(new_color):
@@ -67,12 +76,11 @@ def get_community_color():  # get form scss file
 
 
 def debranding_parts(old_text, new_text, new_color):  # put all your debranding parts here
-
-    # error + warnings dialogs
     if old_text != new_text:
-        edit_dialogs(old_text, new_text) # NEED TESTING(file edit tested, need odoo erros/warnings testing/runing/real time stuff)
-    # translations(ar, fr, en)
-    # edit_translations(old_text, new_text)  # NEED FIXING!
+        # error + warnings dialogs
+        edit_dialogs(old_text, new_text)
+        # translations(ar, fr, en)
+        edit_translations(old_text, new_text)  # NEEDS TESTING!
     # community color changer
     if new_color != get_community_color():
         edit_community_color(new_color)  # TESTED
@@ -89,10 +97,10 @@ def debrand(new_odoo, new_color):
 
         # debranding_parts(old_data_store["company_name"], new_odoo, new_color)
     # else:
-        # use default string "Odoo" as target
-        # print("odoo as target and ",new_odoo," as replacement")
+    # use default string "Odoo" as target
+    # print("odoo as target and ",new_odoo," as replacement")
 
-        # debranding_parts('Odoo', new_odoo, new_color)
+    # debranding_parts('Odoo', new_odoo, new_color)
 
     # write changes
     data_store = {
@@ -145,6 +153,6 @@ class changer_backend_config(models.TransientModel):
     def set_values(self):
         debrand(self.x_company_name, self.x_color)
         super(changer_backend_config, self).set_values()
-        self.env.ref('res_config_settings_view_form').write({'x_company_name': self.x_company_name})
-        self.env.ref('res_config_settings_view_form').write({'x_color': self.x_color})
+        self.env.ref('res_config_settings_view_form').write({'x_company_name': self.x_company_name})  # BOTH NEED RETHINKING/FIXING
+        self.env.ref('res_config_settings_view_form').write({'x_color': self.x_color})  # RETURNS COLUMN 'x_color' CAN'T BE SET TO NULL KIND OF EXCEPTION...
 # </editor-fold>
